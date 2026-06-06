@@ -8,7 +8,7 @@ public enum QType
     singleChoice = 0,
     multipleChoice = 1
 }
-
+[BsonIgnoreExtraElements]
 public class Question
 {
     public ObjectId Id { get; set; }

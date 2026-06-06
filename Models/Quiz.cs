@@ -19,8 +19,10 @@ public class QuizSettings
     public int? DefaultQuestionTimeLimit { get; set; }
     public int? TimeLimit { get; set; }
 }
+[BsonIgnoreExtraElements]
 public class Quiz
 {
+    public ObjectId Id;
     public required string Title { get; set; }
     public required string Description { get; set; }
     public ObjectId TeacherId { get; set; }
