@@ -68,7 +68,7 @@ public class QuizService(IMongoCollection<Quiz> collection, IMapper mapper) : IQ
         return quiz;
     }
 
-    public async Task<Quiz> UpdateQuiz(UpdateQuizDTO dto, string id)
+    public async Task<Quiz> UpdateQuiz(string id, UpdateQuizDTO dto)
     {
         // helper
         var updateBuilder = Builders<Quiz>.Update;

@@ -14,6 +14,6 @@ public interface IQuizService
     public Task<QuizDTO> GetQuizById(ObjectId id);
     public Task<Quiz> GetFullQuizById(ObjectId id);
     public Task<Quiz> CreateQuiz(CreateQuizDTO dto);
-    public Task<Quiz> UpdateQuiz(UpdateQuizDTO dto, string id);
+    public Task<Quiz> UpdateQuiz(string id, UpdateQuizDTO dto);
     public Task DeleteQuiz(string id);
 }
