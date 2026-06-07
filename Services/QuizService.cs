@@ -1,16 +1,23 @@
 using System.Threading.Tasks;
 using AutoMapper;
+using FluentValidation;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using quizApi.DTOs;
 using quizApi.Models;
+using quizApi.Validators;
 
 namespace quizApi.Services;
 
-public class QuizService(IMongoCollection<Quiz> collection, IMapper mapper) : IQuizService
+public class QuizService(
+    IMongoCollection<Quiz> collection,
+    IMapper mapper,
+    IValidator<CreateQuestionDTO> createQuestionValidator
+) : IQuizService
 {
     private readonly IMongoCollection<Quiz> _collection = collection;
     private readonly IMapper _mapper = mapper;
+    private readonly IValidator<CreateQuestionDTO> _createQuestionValidator = createQuestionValidator;
 
     // Get all quizes asyncronously
     public async Task<List<QuizDTO>> GetQuizzes(int? limit = null, int? skip = null)
@@ -103,5 +110,24 @@ public class QuizService(IMongoCollection<Quiz> collection, IMapper mapper) : IQ
     {
         // fine if doesnt throw
         await _collection.FindOneAndDeleteAsync(q => q.Id == new ObjectId(id));
+    }
+
+    public async Task<Question> AddQuestion(string quizId, CreateQuestionDTO dto)
+    {
+        // Custom validation defined in validator
+        // basically just checks for correct answers depending on a question type
+        _createQuestionValidator.ValidateAndThrow(dto);
+
+        var question = _mapper.Map<Question>(dto);
+        var update = Builders<Quiz>.Update.Push(
+            q => q.Questions,
+            question
+        );
+        await _collection.UpdateOneAsync(
+            q => q.Id == new ObjectId(quizId),
+            update
+        );
+        
+        return question;
     }
 }

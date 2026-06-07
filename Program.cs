@@ -1,8 +1,10 @@
 using AutoMapper;
+using FluentValidation;
 using quizApi.DTOs;
 using quizApi.Extensions;
 using quizApi.Models;
 using quizApi.Services;
+using quizApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services
     .AddCollection<Quiz>("quizes");
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
+builder.Services.AddValidatorsFromAssemblyContaining<CreateQuestionValidator>();
 // *** Custom Services ***
 
 builder.Services.AddControllers();
@@ -45,5 +48,7 @@ class AutoMapperProfile : Profile
         CreateMap<Quiz, QuizDTO>();
         CreateMap<Question, QuestionDTO>();
         CreateMap<Answer, AnswerDTO>();
+        CreateMap<CreateAnswerDTO, Answer>();
+        CreateMap<CreateQuestionDTO, Question>();
     }
 }

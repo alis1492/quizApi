@@ -16,4 +16,6 @@ public interface IQuizService
     public Task<Quiz> CreateQuiz(CreateQuizDTO dto);
     public Task<Quiz> UpdateQuiz(string id, UpdateQuizDTO dto);
     public Task DeleteQuiz(string id);
+    public Task<Question> AddQuestion(string quizId, CreateQuestionDTO dto);
+    // public Task<Question> UpdateQuestion
 }

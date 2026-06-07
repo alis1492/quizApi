@@ -11,7 +11,7 @@ public enum QType
 [BsonIgnoreExtraElements]
 public class Question
 {
-    public ObjectId Id { get; set; }
+    public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
     [BsonRepresentation(BsonType.Int32)]
     public required QType Type { get; set; }
     public required string Text { get; set; }
