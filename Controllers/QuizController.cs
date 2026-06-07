@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using quizApi.DTOs;
 using quizApi.Models;
 using quizApi.Services;
@@ -13,11 +14,18 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     private readonly IQuizService _quizService = quizService;
     private readonly ILogger<QuizController> _logger = logger;
 
-    [HttpGet(Name = "GetQuizzes")]
-    public async Task<IActionResult> GetQuizzes()
+    [HttpGet(Name = "GetAll")]
+    public async Task<IActionResult> GetQuizzes([FromQuery] int? limit,[FromQuery]  int? skip)
     {
-        List<QuizDTO> quizzes = await _quizService.GetQuizzes();
+        List<QuizDTO> quizzes = await _quizService.GetQuizzes(limit, skip);
         return Ok(quizzes);
+    }
+
+    [HttpGet("{id}", Name = "GetById")]
+    public async Task<IActionResult> GetQuizById([FromRoute] string id)
+    {
+        QuizDTO quiz = await _quizService.GetQuizById(new ObjectId(id));
+        return Ok(quiz);
     }
 
     [HttpPost]
