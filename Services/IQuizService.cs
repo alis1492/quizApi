@@ -13,4 +13,7 @@ public interface IQuizService
     // Get a single quiz by id
     public Task<QuizDTO> GetQuizById(ObjectId id);
     public Task<Quiz> GetFullQuizById(ObjectId id);
+    public Task<Quiz> CreateQuiz(CreateQuizDTO dto);
+    public Task<Quiz> UpdateQuiz(UpdateQuizDTO dto, string id);
+    public Task DeleteQuiz(string id);
 }

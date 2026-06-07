@@ -16,12 +16,34 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     [HttpGet(Name = "GetQuizzes")]
     public async Task<IActionResult> GetQuizzes()
     {
-        var quizzes = await _quizService.GetFullQuizzes();
-        foreach(Quiz q in quizzes)
-        {
-            string json = JsonSerializer.Serialize(q, new JsonSerializerOptions{WriteIndented = true});
-            _logger.LogInformation(json);
-        }
+        List<QuizDTO> quizzes = await _quizService.GetQuizzes();
         return Ok(quizzes);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateQuiz([FromBody]CreateQuizDTO dto)
+    {
+        Quiz quiz = await _quizService.CreateQuiz(dto);
+
+        _logger.LogInformation($"Quiz Created: {quiz.Id} (Id)");
+        return Ok(new { QuizId = quiz.Id.ToString() });
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdateQuiz([FromBody]UpdateQuizDTO dto, [FromRoute]string id)
+    {
+        Quiz quiz = await _quizService.UpdateQuiz(dto, id);
+
+        _logger.LogInformation($"Quiz Updated: {id} (Id)");
+        return Created();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteQuiz([FromRoute]string id)
+    {
+        await _quizService.DeleteQuiz(id);
+        _logger.LogInformation($"Quiz Deleted: {id} (Id)");
+        
+        return Ok();
     }
 }

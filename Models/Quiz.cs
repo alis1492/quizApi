@@ -22,7 +22,7 @@ public class QuizSettings
 [BsonIgnoreExtraElements]
 public class Quiz
 {
-    public ObjectId Id { get; set; }
+    public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
     public required string Title { get; set; }
     public required string Description { get; set; }
     public ObjectId TeacherId { get; set; }
