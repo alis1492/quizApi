@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
 using AutoMapper;
+using DnsClient.Protocol;
 using FluentValidation;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using quizApi.DTOs;
 using quizApi.Models;
 using quizApi.Validators;
@@ -12,12 +14,14 @@ namespace quizApi.Services;
 public class QuizService(
     IMongoCollection<Quiz> collection,
     IMapper mapper,
-    IValidator<CreateQuestionDTO> createQuestionValidator
+    IValidator<CreateQuestionDTO> createQuestionValidator,
+    IValidator<UpdateQuestionDTO> updateQuestionValidator
 ) : IQuizService
 {
     private readonly IMongoCollection<Quiz> _collection = collection;
     private readonly IMapper _mapper = mapper;
     private readonly IValidator<CreateQuestionDTO> _createQuestionValidator = createQuestionValidator;
+    private readonly IValidator<UpdateQuestionDTO> _updateQuestionValidator = updateQuestionValidator;
 
     // Get all quizes asyncronously
     public async Task<List<QuizDTO>> GetQuizzes(int? limit = null, int? skip = null)
@@ -75,7 +79,7 @@ public class QuizService(
         return quiz;
     }
 
-    public async Task<Quiz> UpdateQuiz(string id, UpdateQuizDTO dto)
+    public async Task<Quiz> UpdateQuiz(ObjectId id, UpdateQuizDTO dto)
     {
         // helper
         var updateBuilder = Builders<Quiz>.Update;
@@ -97,7 +101,7 @@ public class QuizService(
 
         // if doesnt throw everything is fine
         var quiz = await _collection.FindOneAndUpdateAsync(
-            q => q.Id == new ObjectId(id),
+            q => q.Id == id,
             update,
             // ReturnDocument allows the same db call to return updated document
             new FindOneAndUpdateOptions<Quiz>{ReturnDocument = ReturnDocument.After}
@@ -106,13 +110,13 @@ public class QuizService(
         return quiz;
     }
 
-    public async Task DeleteQuiz(string id)
+    public async Task DeleteQuiz(ObjectId id)
     {
         // fine if doesnt throw
-        await _collection.FindOneAndDeleteAsync(q => q.Id == new ObjectId(id));
+        await _collection.FindOneAndDeleteAsync(q => q.Id == id);
     }
 
-    public async Task<Question> AddQuestion(string quizId, CreateQuestionDTO dto)
+    public async Task<Question> AddQuestion(ObjectId quizId, CreateQuestionDTO dto)
     {
         // Custom validation defined in validator
         // basically just checks for correct answers depending on a question type
@@ -124,10 +128,63 @@ public class QuizService(
             question
         );
         await _collection.UpdateOneAsync(
-            q => q.Id == new ObjectId(quizId),
+            q => q.Id == quizId,
             update
         );
         
+        return question;
+    }
+
+    // There are two database calls bruh, idk how to optimize it to one
+    public async Task<Question> UpdateQuestion(ObjectId quizId, ObjectId questionId, UpdateQuestionDTO dto)
+    {
+        var quiz = await _collection
+            .Find(q => q.Id == quizId)
+            .FirstOrDefaultAsync();
+        // this ?? check must be here since neither quizId nor questionId are a part of UpdateQuestionDTO
+        var question = quiz.Questions
+            .FirstOrDefault(q => q.Id == questionId) 
+            ?? throw new ValidationException($"Question with id {questionId} not found");
+        var context = new ValidationContext<UpdateQuestionDTO>(dto);
+        context.RootContextData["Question"] = question;
+        
+
+        // validate the dto properly
+        // NOTE: ValidateAndThrow doesn't work with nested context so if() is used instead
+        var validationResult = _updateQuestionValidator.Validate(context);
+        if(!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+
+
+        // Update filter to find the specific question
+        var filter = Builders<Quiz>.Filter.Eq(q => q.Id, quizId) &
+                     Builders<Quiz>.Filter.Eq(q => q.Questions.FirstMatchingElement().Id, questionId);
+        
+        // helper
+        var updateBuilder = Builders<Quiz>.Update;
+        // update definitions to be combined
+        List<UpdateDefinition<Quiz>> updateDefinitions = [];
+        // this is ugly, but its still better than magical strings of "i hope this is how the element is called in database"
+        if(dto.Type != null)
+            updateDefinitions.Add(updateBuilder.Set(q => 
+                q.Questions.FirstMatchingElement().Type, (QType)dto.Type));
+        if(dto.Text != null)
+            updateDefinitions.Add(updateBuilder.Set(q => 
+                q.Questions.FirstMatchingElement().Text, dto.Text));
+        if(dto.Points != null)
+            updateDefinitions.Add(updateBuilder.Set(q => 
+                q.Questions.FirstMatchingElement().Points, dto.Points));
+        // we know from validation that every answer id is valid
+        if(dto.Answers != null)
+        {
+            updateDefinitions.Add(updateBuilder.Set(q => 
+                q.Questions.FirstMatchingElement().Answers, _mapper.Map<List<Answer>>(dto.Answers)));
+        }
+
+        var update = updateBuilder.Combine(updateDefinitions);
+        // reused variables from the start
+        quiz = await _collection.FindOneAndUpdateAsync(filter, update); 
+        question = quiz.Questions.First(q => q.Id == questionId);
         return question;
     }
 }

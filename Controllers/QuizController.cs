@@ -21,9 +21,9 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     }
 
     [HttpGet("{id}", Name = "GetById")]
-    public async Task<IActionResult> GetQuizById([FromRoute] string id)
+    public async Task<IActionResult> GetQuizById([FromRoute] ObjectId id) 
     {
-        QuizDTO quiz = await _quizService.GetQuizById(new ObjectId(id));
+        QuizDTO quiz = await _quizService.GetQuizById(id);
         return Ok(quiz);
     }
 
@@ -37,7 +37,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateQuiz([FromRoute]string id, [FromBody]UpdateQuizDTO dto)
+    public async Task<IActionResult> UpdateQuiz([FromRoute]ObjectId id, [FromBody]UpdateQuizDTO dto)
     {
         Quiz quiz = await _quizService.UpdateQuiz(id, dto);
 
@@ -46,7 +46,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteQuiz([FromRoute]string id)
+    public async Task<IActionResult> DeleteQuiz([FromRoute]ObjectId id)
     {
         await _quizService.DeleteQuiz(id);
         _logger.LogInformation($"Quiz Deleted: {id} (Id)");
@@ -56,7 +56,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
 
     // Question managment
     [HttpPost("{id}/question")]
-    public async Task<IActionResult> AddQuestion([FromRoute] string id, [FromBody] CreateQuestionDTO dto)
+    public async Task<IActionResult> AddQuestion([FromRoute] ObjectId id, [FromBody] CreateQuestionDTO dto)
     {
         Question question = await _quizService.AddQuestion(id, dto);
         _logger.LogInformation($"Question Added: {id} (Quiz Id)\n\t{question.Id} (Question Id)");

@@ -57,5 +57,6 @@ class AutoMapperProfile : Profile
         CreateMap<Answer, AnswerDTO>();
         CreateMap<CreateAnswerDTO, Answer>();
         CreateMap<CreateQuestionDTO, Question>();
+        CreateMap<UpdateAnswerDTO, Answer>();
     }
 }
