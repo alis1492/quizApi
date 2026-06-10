@@ -53,4 +53,14 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
         
         return Ok();
     }
+
+    // Question managment
+    [HttpPost("{id}/question")]
+    public async Task<IActionResult> AddQuestion([FromRoute] string id, [FromBody] CreateQuestionDTO dto)
+    {
+        Question question = await _quizService.AddQuestion(id, dto);
+        _logger.LogInformation($"Question Added: {id} (Quiz Id)\n\t{question.Id} (Question Id)");
+
+        return Created();
+    }
 }

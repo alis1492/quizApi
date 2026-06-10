@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using quizApi.DTOs;
+using quizApi.ExceptionHandlers;
 using quizApi.Extensions;
 using quizApi.Models;
 using quizApi.Services;
@@ -17,6 +18,8 @@ builder.Services
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<CreateQuestionValidator>();
+builder.Services.AddExceptionHandler<DevelopmentExceptionHandler>();
+builder.Services.AddProblemDetails();
 // *** Custom Services ***
 
 builder.Services.AddControllers();
@@ -37,6 +40,10 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// *** Added Methods ***
+app.UseExceptionHandler("/Error");
+// *** Added Methods ***
 
 app.Run();
 
