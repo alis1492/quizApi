@@ -26,7 +26,7 @@ public class UpdateQuestionValidator : AbstractValidator<UpdateQuestionDTO>
                     var question = context.RootContextData["Question"] as Question 
                     ?? throw new Exception("Missing Question context");
 
-                    return question.Answers.Exists(db => db.Id == id);
+                    return question.Answers.Exists(db => db.Id == new ObjectId(id));
                 })
                 .WithMessage(a => $"Answer with id {a.Id} not found in existing question");
         }).When(q => q.Answers != null);

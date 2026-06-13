@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using DnsClient.Protocol;
@@ -6,6 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using quizApi.DTOs;
+using quizApi.Exceptions;
 using quizApi.Models;
 using quizApi.Validators;
 
@@ -58,7 +61,8 @@ public class QuizService(
     }
     public async Task<Quiz> GetFullQuizById(ObjectId id)
     {
-        return await _collection.Find<Quiz>(q => q.Id == id).FirstOrDefaultAsync();
+        return await _collection.Find<Quiz>(q => q.Id == id).FirstOrDefaultAsync()
+            ?? throw new DocumentNotFoundException("Quiz", id.ToString());
     }
 
     public async Task<Quiz> CreateQuiz(CreateQuizDTO dto)
@@ -105,7 +109,7 @@ public class QuizService(
             update,
             // ReturnDocument allows the same db call to return updated document
             new FindOneAndUpdateOptions<Quiz>{ReturnDocument = ReturnDocument.After}
-        );
+        ) ?? throw new DocumentNotFoundException("Quiz", id.ToString());
 
         return quiz;
     }
@@ -113,7 +117,8 @@ public class QuizService(
     public async Task DeleteQuiz(ObjectId id)
     {
         // fine if doesnt throw
-        await _collection.FindOneAndDeleteAsync(q => q.Id == id);
+        var quiz = await _collection.FindOneAndDeleteAsync(q => q.Id == id)
+            ?? throw new DocumentNotFoundException("Quiz", id.ToString());
     }
 
     public async Task<Question> AddQuestion(ObjectId quizId, CreateQuestionDTO dto)
@@ -138,13 +143,14 @@ public class QuizService(
     // There are two database calls bruh, idk how to optimize it to one
     public async Task<Question> UpdateQuestion(ObjectId quizId, ObjectId questionId, UpdateQuestionDTO dto)
     {
-        var quiz = await _collection
+        Quiz? quiz = await _collection
             .Find(q => q.Id == quizId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync()
+            ?? throw new DocumentNotFoundException("Quiz", quizId.ToString());
         // this ?? check must be here since neither quizId nor questionId are a part of UpdateQuestionDTO
         var question = quiz.Questions
             .FirstOrDefault(q => q.Id == questionId) 
-            ?? throw new ValidationException($"Question with id {questionId} not found");
+            ?? throw new DocumentNotFoundException("Question", questionId.ToString());
         var context = new ValidationContext<UpdateQuestionDTO>(dto);
         context.RootContextData["Question"] = question;
         
@@ -158,7 +164,7 @@ public class QuizService(
 
         // Update filter to find the specific question
         var filter = Builders<Quiz>.Filter.Eq(q => q.Id, quizId) &
-                     Builders<Quiz>.Filter.Eq(q => q.Questions.FirstMatchingElement().Id, questionId);
+                     Builders<Quiz>.Filter.ElemMatch(q => q.Questions, _q => _q.Id == questionId);
         
         // helper
         var updateBuilder = Builders<Quiz>.Update;
@@ -181,9 +187,20 @@ public class QuizService(
                 q.Questions.FirstMatchingElement().Answers, _mapper.Map<List<Answer>>(dto.Answers)));
         }
 
+
+        // null checks are unnecessary since first call ensures that the <filter> is valid
         var update = updateBuilder.Combine(updateDefinitions);
         // reused variables from the start
-        quiz = await _collection.FindOneAndUpdateAsync(filter, update); 
+        quiz = await _collection.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<Quiz, Quiz>
+            {
+                ReturnDocument = ReturnDocument.After
+            });
+            // ?? throw new DocumentNotFoundException("Question", questionId.ToString())
+
+        // debug artifacts
+        // Console.WriteLine(JsonSerializer.Serialize(quiz, new JsonSerializerOptions{WriteIndented = true}));
+
         question = quiz.Questions.First(q => q.Id == questionId);
         return question;
     }

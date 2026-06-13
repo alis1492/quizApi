@@ -8,8 +8,7 @@ namespace quizApi.DTOs;
 /// </summary>
 public class UpdateAnswerDTO
 {
-    [Length(24, 24)]
-    public required ObjectId Id { get; set; }
+    public required string Id { get; set; }
     public required string Text { get; set; }
     public required bool IsCorrect { get; set; }
 }

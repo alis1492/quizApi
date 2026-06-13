@@ -63,4 +63,13 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
 
         return Created();
     }
+
+    [HttpPatch("{quizId}/question/{questionId}")]
+    public async Task<IActionResult> UpdateQuestion([FromRoute] ObjectId quizId, [FromRoute] ObjectId questionId, [FromBody] UpdateQuestionDTO dto)
+    {
+        await _quizService.UpdateQuestion(quizId, questionId, dto);
+        _logger.LogInformation($"Question Updated: {quizId} (Quiz Id)\n\t{questionId} (Question Id)");
+
+        return Created();
+    }
 }

@@ -1,5 +1,7 @@
 using AutoMapper;
 using FluentValidation;
+using MongoDB.Bson;
+using quizApi.Converters;
 using quizApi.DTOs;
 using quizApi.ExceptionHandlers;
 using quizApi.Extensions;
@@ -52,6 +54,10 @@ class AutoMapperProfile : Profile
 {   
     public AutoMapperProfile()
     {
+        CreateMap<ObjectId, string>()
+            .ConvertUsing<ObjectIdToStringConverter>();
+        CreateMap<string, ObjectId>()
+            .ConvertUsing<StringToObjectIdConverter>();
         CreateMap<Quiz, QuizDTO>();
         CreateMap<Question, QuestionDTO>();
         CreateMap<Answer, AnswerDTO>();

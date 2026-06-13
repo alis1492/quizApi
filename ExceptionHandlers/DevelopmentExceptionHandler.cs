@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Diagnostics;
 using MongoDB.Driver;
+using quizApi.DTOs;
+using quizApi.Exceptions;
 
 namespace quizApi.ExceptionHandlers;
 
@@ -17,31 +19,27 @@ public class DevelopmentExceptionHandler(
         httpContext.Response.ContentType = "application/problem+json";
         if(exception is FluentValidation.ValidationException || exception is ValidationException)
         {
-            var payload = new
-            {
-                Title = "Validation Error",
-                Status = 400,
-                exception.Message,
-                exception.StackTrace,
-                Timestamp = DateTime.UtcNow.ToString("o")
-            };
+            var payload = new DevelopmentExceptionDTO("Validation Error", 400, exception);
             await httpContext.Response.WriteAsJsonAsync(payload, cancellationToken);
-        } else if(exception is MongoException)
+            return true;
+        }
+        else if(exception is DocumentNotFoundException)
         {
-            var payload = new
-            {
-                Title = "Database Error",
-                Status = 500,
-                exception.Message,
-                exception.StackTrace,
-                Timestamp = DateTime.UtcNow.ToString("o")
-            };
+            var payload = new DevelopmentExceptionDTO("Not Found", 404, exception);
             httpContext.Response.StatusCode = 500;
             await httpContext.Response.WriteAsJsonAsync(payload, cancellationToken);
+            return true;
+        } 
+        else if(exception is MongoException)
+        {
+            var payload = new DevelopmentExceptionDTO("Database Error", 500, exception);
+            httpContext.Response.StatusCode = 500;
+            await httpContext.Response.WriteAsJsonAsync(payload, cancellationToken);
+            return true;
         }
 
         // * true means handled
         // * false means unhandled - rethrow
-        return true;
+        return false;
     }
 }
