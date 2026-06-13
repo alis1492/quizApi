@@ -30,5 +30,28 @@ public class UpdateQuestionValidator : AbstractValidator<UpdateQuestionDTO>
                 })
                 .WithMessage(a => $"Answer with id {a.Id} not found in existing question");
         }).When(q => q.Answers != null);
+        RuleFor(q => q.Answers)
+            .NotEmpty()
+            .WithMessage("Answers field can not be empty, must contain an array of updated answers or be null")
+            .When(q => q.Answers != null);
+        RuleFor(q => q.Answers)
+            .Must((dto, answerDTOs, context) =>
+            {
+                var question = context.RootContextData["Question"] as Question
+                ?? throw new Exception("Missing Question context");
+
+                if(question.Type == QType.singleChoice)
+                {
+                    return answerDTOs.Any(a => a.IsCorrect);
+                }
+                else if(question.Type == QType.multipleChoice)
+                {
+                    return answerDTOs.Count(a => a.IsCorrect) > 1;
+                }
+
+                return false;
+            })
+            .WithMessage("Wrong amount of correct answers, check question type")
+            .When(q => q.Answers != null);
     }
 }
