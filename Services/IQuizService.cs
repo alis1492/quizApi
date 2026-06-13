@@ -18,4 +18,5 @@ public interface IQuizService
     public Task DeleteQuiz(ObjectId Id);
     public Task<Question> AddQuestion(ObjectId quizId, CreateQuestionDTO dto);
     public Task<Question> UpdateQuestion(ObjectId quizId, ObjectId questionId, UpdateQuestionDTO dto);
+    public Task DeleteQuestion(ObjectId quizId, ObjectId questionId);
 }

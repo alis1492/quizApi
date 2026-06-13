@@ -42,7 +42,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
         Quiz quiz = await _quizService.UpdateQuiz(id, dto);
 
         _logger.LogInformation($"Quiz Updated: {id} (Id)");
-        return Created();
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
@@ -51,7 +51,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
         await _quizService.DeleteQuiz(id);
         _logger.LogInformation($"Quiz Deleted: {id} (Id)");
         
-        return Ok();
+        return NoContent();
     }
 
     // Question managment
@@ -59,7 +59,7 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     public async Task<IActionResult> AddQuestion([FromRoute] ObjectId id, [FromBody] CreateQuestionDTO dto)
     {
         Question question = await _quizService.AddQuestion(id, dto);
-        _logger.LogInformation($"Question Added: {id} (Quiz Id)\n\t{question.Id} (Question Id)");
+        _logger.LogInformation($"Question Added: \n\t{id} (Quiz Id)\n\t{question.Id} (Question Id)");
 
         return Created();
     }
@@ -68,8 +68,17 @@ public class QuizController(IQuizService quizService, ILogger<QuizController> lo
     public async Task<IActionResult> UpdateQuestion([FromRoute] ObjectId quizId, [FromRoute] ObjectId questionId, [FromBody] UpdateQuestionDTO dto)
     {
         await _quizService.UpdateQuestion(quizId, questionId, dto);
-        _logger.LogInformation($"Question Updated: {quizId} (Quiz Id)\n\t{questionId} (Question Id)");
+        _logger.LogInformation($"Question Updated: \n\t{quizId} (Quiz Id)\n\t{questionId} (Question Id)");
 
-        return Created();
+        return NoContent();
+    }
+
+    [HttpDelete("{quizId}/question/{questionId}")]
+    public async Task<IActionResult> DeleteQuestion([FromRoute] ObjectId quizId, [FromRoute] ObjectId questionId)
+    {
+        await _quizService.DeleteQuestion(quizId, questionId);
+        _logger.LogInformation($"Question Deleted: \n\t{quizId} (Quiz Id)\n\t{questionId} (Question Id)");
+
+        return NoContent();
     }
 }

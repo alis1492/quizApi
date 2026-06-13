@@ -132,10 +132,12 @@ public class QuizService(
             q => q.Questions,
             question
         );
-        await _collection.UpdateOneAsync(
+        var result = await _collection.UpdateOneAsync(
             q => q.Id == quizId,
             update
         );
+        if(result.ModifiedCount <= 0)
+            throw new MongoException("Failed to Add Question");
         
         return question;
     }
@@ -203,5 +205,38 @@ public class QuizService(
 
         question = quiz.Questions.First(q => q.Id == questionId);
         return question;
+    }
+
+    // two db calls again ._.
+    /// <summary>
+    /// Delete a question from quiz by id, throws DocumentNotFoundException or MongoException on failure
+    /// </summary>
+    /// <param name="quizId"></param>
+    /// <param name="questionId"></param>
+    /// <returns></returns>
+    /// <exception cref="DocumentNotFoundException">Bad ids</exception>
+    /// <exception cref="MongoException">DB failure</exception>
+    public async Task DeleteQuestion(ObjectId quizId, ObjectId questionId)
+    {
+        // ensure that both quizId and questionId are viable
+        Quiz? quiz = await _collection
+            .Find(q => q.Id == quizId)
+            .FirstOrDefaultAsync()
+            ?? throw new DocumentNotFoundException("Quiz", quizId.ToString());
+        // this ?? check must be here since neither quizId nor questionId are a part of UpdateQuestionDTO
+        var question = quiz.Questions
+            .FirstOrDefault(q => q.Id == questionId) 
+            ?? throw new DocumentNotFoundException("Question", questionId.ToString());
+        
+
+        // update filter and definition
+        var filter = Builders<Quiz>.Filter.Eq(q => q.Id, quizId);
+        var update = Builders<Quiz>.Update.PullFilter(
+            quiz => quiz.Questions, 
+            question => question.Id == questionId);
+        
+        var result = await _collection.UpdateOneAsync(filter, update);
+        if(result.ModifiedCount <= 0)
+            throw new MongoException($"Failed to delete question with id {questionId}");
     }
 }
