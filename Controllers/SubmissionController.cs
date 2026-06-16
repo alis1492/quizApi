@@ -46,5 +46,14 @@ public class SubmissionController(
 
         _logger.LogInformation($"Submission Created: {submissionDto.Id} (Id)");
         return Ok(submissionDto);
-    }    
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteSubmission([FromRoute] ObjectId id)
+    {
+        await _submissionService.DeleteSubmission(id);
+
+        _logger.LogInformation($"Submission Created: {id} (Id)");
+        return NoContent();
+    }
 }

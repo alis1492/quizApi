@@ -6,11 +6,37 @@ namespace quizApi.Services;
 
 public interface ISubmissionService
 {
+    // Get submissions
+    /// <summary>
+    /// Get all submissions as dtos, can return empty list
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <param name="skip"></param>
+    /// <returns></returns>
     public Task<List<SubmissionDTO>> GetSubmissions(int? limit = null, int? skip = null);
+
+    /// <summary>
+    /// Get all full submissions, can return empty list
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <param name="skip"></param>
+    /// <returns></returns>
     public Task<List<Submission>> GetFullSubmissions(int? limit = null, int? skip = null);
 
     // // Get a single quiz by id
+    /// <summary>
+    /// Get submissionDTO or throw
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="DocumentNotFoundException"></exception>
     public Task<SubmissionDTO> GetSubmissionById(ObjectId id);
+    /// <summary>
+    /// Get full submission or throw
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="DocumentNotFoundException"></exception>
     public Task<Submission> GetFullSubmissionById(ObjectId id);
 
     /// <summary>
@@ -21,6 +47,11 @@ public interface ISubmissionService
     /// <exception cref="DocumentNotFoundException">when QuizId is invalid</exception>
     public Task<Submission> CreateSubmission(CreateSubmissionDTO dto);
     
-    // public Task<Submission> UpdateSubmission(ObjectId Id, UpdateSubmissionDTO dto);
-    // public Task DeleteSubmission(ObjectId Id);
+    /// <summary>
+    /// Delete submission or throw
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="MongoException"></exception>
+    public Task DeleteSubmission(ObjectId id);
 }
