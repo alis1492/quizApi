@@ -25,7 +25,7 @@ public class UserAnswer
     // set after grading, helpful for frontend team
     // if the quiz ever gets updated (which is unlikely due to the nature of simple quizes)
     // its fine since correct answers are written at the moment of graduation
-    public List<ObjectId>? CorrectAnswers {get; set;}
+    public List<ObjectId> CorrectAnswers {get; set;} = [];
     public int PointsAwarded {get; set;} = 0;
 }
 
@@ -41,7 +41,7 @@ public enum Status
 public class Submission
 {
     public ObjectId Id {get; set;} = ObjectId.GenerateNewId();
-    public required ObjectId TestId {get; set;}
+    public required ObjectId QuizId {get; set;}
     [BsonRepresentation(BsonType.Int32)]
     public required UserType UserType {get; set;}
     public required ObjectId UserId {get; set;}
