@@ -26,7 +26,7 @@ public class DevelopmentExceptionHandler(
         else if(exception is DocumentNotFoundException)
         {
             var payload = new DevelopmentExceptionDTO("Not Found", 404, exception);
-            httpContext.Response.StatusCode = 500;
+            httpContext.Response.StatusCode = 404;
             await httpContext.Response.WriteAsJsonAsync(payload, cancellationToken);
             return true;
         } 
