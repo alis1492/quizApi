@@ -16,8 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddMongoClient()
     .AddDatabase()
-    .AddCollection<Quiz>("quizes");
+    .AddCollection<Quiz>("quizes")
+    .AddCollection<Submission>("submissions");
 builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
 builder.Services.AddAutoMapper(cfg => { }, typeof(Program).Assembly);
 builder.Services.AddValidatorsFromAssemblyContaining<CreateQuestionValidator>();
 builder.Services.AddExceptionHandler<DevelopmentExceptionHandler>();
@@ -54,15 +56,23 @@ class AutoMapperProfile : Profile
 {   
     public AutoMapperProfile()
     {
+        // ObjectId to string conversion for preserving sanity
         CreateMap<ObjectId, string>()
             .ConvertUsing<ObjectIdToStringConverter>();
         CreateMap<string, ObjectId>()
             .ConvertUsing<StringToObjectIdConverter>();
+
+        // Quiz related maps
         CreateMap<Quiz, QuizDTO>();
         CreateMap<Question, QuestionDTO>();
         CreateMap<Answer, AnswerDTO>();
         CreateMap<CreateAnswerDTO, Answer>();
         CreateMap<CreateQuestionDTO, Question>();
         CreateMap<UpdateAnswerDTO, Answer>();
+
+        // Submission related maps
+        CreateMap<CreateSubmissionDTO, Submission>();
+        CreateMap<UserAnswer, UserAnswerDTO>();
+        CreateMap<Submission, SubmissionDTO>();
     }
 }

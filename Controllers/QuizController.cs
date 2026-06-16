@@ -7,7 +7,7 @@ using quizApi.Services;
 namespace quizApi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class QuizController(IQuizService quizService, ILogger<QuizController> logger) : ControllerBase
 {
     private readonly IQuizService _quizService = quizService;

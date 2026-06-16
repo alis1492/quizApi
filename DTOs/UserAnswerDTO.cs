@@ -1,0 +1,12 @@
+namespace quizApi.DTOs;
+
+public class UserAnswerDTO
+{
+    public required string QuestionId {get; set;}
+    public List<string> SelectedAnswers {get; set;} = [];
+    // set after grading, helpful for frontend team
+    // if the quiz ever gets updated (which is unlikely due to the nature of simple quizes)
+    // its fine since correct answers are written at the moment of graduation
+    public List<string> CorrectAnswers {get; set;} = [];
+    public int PointsAwarded {get; set;} = 0;
+}
