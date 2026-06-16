@@ -1,16 +1,18 @@
 using quizApi.Models;
 using quizApi.DTOs;
+using MongoDB.Bson;
 
 namespace quizApi.Services;
 
 public interface ISubmissionService
 {
-    // public Task<List<SubmissionDTO>> GetSubmissionzes(int? limit = null, int? skip = null);
-    // public Task<List<Submission>> GetFullSubmissionzes(int? limit = null, int? skip = null);
+    public Task<List<SubmissionDTO>> GetSubmissions(int? limit = null, int? skip = null);
+    public Task<List<Submission>> GetFullSubmissions(int? limit = null, int? skip = null);
 
     // // Get a single quiz by id
-    // public Task<SubmissionDTO> GetSubmissionById(ObjectId id);
-    // public Task<Submission> GetFullSubmissionById(ObjectId id);
+    public Task<SubmissionDTO> GetSubmissionById(ObjectId id);
+    public Task<Submission> GetFullSubmissionById(ObjectId id);
+
     /// <summary>
     /// Create a new submission with status InProgress
     /// </summary>
@@ -18,6 +20,7 @@ public interface ISubmissionService
     /// <returns></returns>
     /// <exception cref="DocumentNotFoundException">when QuizId is invalid</exception>
     public Task<Submission> CreateSubmission(CreateSubmissionDTO dto);
+    
     // public Task<Submission> UpdateSubmission(ObjectId Id, UpdateSubmissionDTO dto);
     // public Task DeleteSubmission(ObjectId Id);
 }

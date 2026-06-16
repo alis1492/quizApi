@@ -1,7 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using quizApi.DTOs;
-using quizApi.Models;
 using quizApi.Services;
 
 namespace quizApi.Controllers;
@@ -10,10 +10,27 @@ namespace quizApi.Controllers;
 [Route("/api/[controller]")]
 public class SubmissionController(
     ISubmissionService submissionService,
-    IMapper _mapper
+    IMapper mapper,
+    ILogger<SubmissionController> logger
 ) : ControllerBase
 {
     private readonly ISubmissionService _submissionService = submissionService;
+    private readonly IMapper _mapper = mapper;
+    private readonly ILogger<SubmissionController> _logger = logger;
+
+    [HttpGet]
+    public async Task<IActionResult> GetSubmissions(int? limit = null, int? skip = null)
+    {
+        var submissions = await _submissionService.GetSubmissions(limit, skip);
+        return Ok(submissions);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetSubmissionById([FromRoute] ObjectId id)
+    {
+        var submission = await _submissionService.GetSubmissionById(id);
+        return Ok(submission);
+    }
 
     /// <summary>
     /// For test purposes only, normally submission must be created with quizStart, 
@@ -26,6 +43,8 @@ public class SubmissionController(
     {
         var submission = await _submissionService.CreateSubmission(dto);
         var submissionDto = _mapper.Map<SubmissionDTO>(submission);
+
+        _logger.LogInformation($"Submission Created: {submissionDto.Id} (Id)");
         return Ok(submissionDto);
     }    
 }
