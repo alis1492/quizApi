@@ -74,5 +74,6 @@ class AutoMapperProfile : Profile
         CreateMap<CreateSubmissionDTO, Submission>();
         CreateMap<UserAnswer, UserAnswerDTO>();
         CreateMap<Submission, SubmissionDTO>();
+        CreateMap<SubmitUserAnswerDTO, UserAnswer>();
     }
 }

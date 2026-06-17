@@ -81,4 +81,22 @@ public class SubmissionService(
         if(result.DeletedCount <= 0)
             throw new MongoException($"Failed to delete submission with id {id}");
     }
+
+    public async Task<Submission> SubmitAnswers(ObjectId id, List<SubmitUserAnswerDTO> answerDTOs)
+    {
+        List<UserAnswer> answers = [];
+        foreach(var answerDTO in answerDTOs)
+        {
+            var answer = _mapper.Map<UserAnswer>(answerDTO);
+            answers.Add(answer);
+        }
+        var update = Builders<Submission>.Update
+            .PushEach(s => s.UserAnswers, answers)
+            .Set(s => s.Status, Status.Submitted);
+        var submission = await _submissionCollection.FindOneAndUpdateAsync(s => s.Id == id, update,
+            new FindOneAndUpdateOptions<Submission, Submission>{ReturnDocument = ReturnDocument.After})
+            ?? throw new MongoException($"Failed to submit answers to quiz with id {id}");
+        
+        return submission;
+    }
 }

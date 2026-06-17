@@ -54,4 +54,13 @@ public interface ISubmissionService
     /// <returns></returns>
     /// <exception cref="MongoException"></exception>
     public Task DeleteSubmission(ObjectId id);
+
+    /// <summary>
+    /// Add User submitted answers to submission by id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="answers"></param>
+    /// <returns>updated submission or throw</returns>
+    /// <exception cref="MongoException"></exception>
+    public Task<Submission> SubmitAnswers(ObjectId id, List<SubmitUserAnswerDTO> answers);
 }

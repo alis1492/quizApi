@@ -56,4 +56,13 @@ public class SubmissionController(
         _logger.LogInformation($"Submission Created: {id} (Id)");
         return NoContent();
     }
+
+    [HttpPost("{id}")]
+    public async Task<IActionResult> SubmitAnswers([FromRoute] ObjectId id, [FromBody] List<SubmitUserAnswerDTO> answers)
+    {
+        await _submissionService.SubmitAnswers(id, answers);
+
+        _logger.LogInformation($"Submitted Answers: {id} (SubmissionId)");
+        return NoContent();
+    }
 }
