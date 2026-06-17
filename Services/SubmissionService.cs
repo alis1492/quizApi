@@ -104,6 +104,12 @@ public class SubmissionService(
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// checks if user selected answers are correct, returns 0 if none are correct or too many answers are selected
+    /// </summary>
+    /// <param name="question"></param>
+    /// <param name="selectedAnswers"></param>
+    /// <returns>points awarded</returns>
     public int GradeQuestion(Question question, List<string> selectedAnswers)
     {
         if(selectedAnswers.Count <= 0)
