@@ -63,4 +63,6 @@ public interface ISubmissionService
     /// <returns>updated submission or throw</returns>
     /// <exception cref="MongoException"></exception>
     public Task<Submission> SubmitAnswers(ObjectId id, List<SubmitUserAnswerDTO> answers);
+
+    public Task<SubmissionDTO> Grade(ObjectId id);
 }

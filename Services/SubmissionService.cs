@@ -10,11 +10,13 @@ namespace quizApi.Services;
 public class SubmissionService(
     IMongoCollection<Submission> submissionCollection,
     IMongoCollection<Quiz> quizCollection,
+    IQuizService quizService,
     IMapper mapper
 ) : ISubmissionService
 {
     private readonly IMongoCollection<Submission> _submissionCollection = submissionCollection;
     private readonly IMongoCollection<Quiz> _quizCollection = quizCollection;
+    private readonly IQuizService _quizService = quizService;
     private readonly IMapper _mapper = mapper;
 
     public async Task<List<SubmissionDTO>> GetSubmissions(int? limit = null, int? skip = null)
@@ -64,10 +66,7 @@ public class SubmissionService(
         var submission = _mapper.Map<Submission>(dto);
         // checks go after mapping because string to ObjectId validates string automatically
         // Quiz check
-        var quiz = await _quizCollection
-            .Find<Quiz>(q => q.Id == submission.QuizId)
-            .FirstOrDefaultAsync()
-            ?? throw new DocumentNotFoundException("Quiz", dto.QuizId);
+        var quiz = await _quizService.GetFullQuizById(submission.QuizId);
 
         // TODO: User check once auth gets implemented
 
@@ -98,5 +97,43 @@ public class SubmissionService(
             ?? throw new MongoException($"Failed to submit answers to quiz with id {id}");
         
         return submission;
+    }
+
+    public async Task<SubmissionDTO> Grade(ObjectId id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public int GradeQuestion(Question question, List<string> selectedAnswers)
+    {
+        if(selectedAnswers.Count <= 0)
+            return 0;
+        if(question.Type == QType.singleChoice)
+        {
+            // simply compare the first selected answer to correct one
+            var correctAnswerId = question.Answers.First(a => a.IsCorrect).Id.ToString();
+            return correctAnswerId == selectedAnswers[0] ? question.Points : 0;
+        } 
+        else if(question.Type == QType.multipleChoice)
+        {
+            int pointsAwarded = 0;
+            var correctAnswers = question.Answers.Where(a => a.IsCorrect).ToList<Answer>();
+            var pointsPerAnswer = question.Points/correctAnswers.Count;
+
+            // for every correct answer selected award pointsPerAnswer
+            foreach(var correctAnswer in correctAnswers)
+            {
+                bool correctAnswerSelected = selectedAnswers.Any(a => a == correctAnswer.Id.ToString());
+                pointsAwarded += correctAnswerSelected ? pointsPerAnswer : 0;
+            }
+
+            // for every unnecessarily selected answer deduct pointsPerAnswer
+            int moreAnswersSelectedThanAreCorrect = selectedAnswers.Count - correctAnswers.Count;
+            if(moreAnswersSelectedThanAreCorrect > 0)
+                pointsAwarded -= moreAnswersSelectedThanAreCorrect * pointsPerAnswer;
+            
+            return pointsAwarded;
+        }
+        return 0;
     }
 }
