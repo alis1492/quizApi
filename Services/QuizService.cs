@@ -142,13 +142,9 @@ public class QuizService(
         return question;
     }
 
-    // There are two database calls bruh, idk how to optimize it to one
     public async Task<Question> UpdateQuestion(ObjectId quizId, ObjectId questionId, UpdateQuestionDTO dto)
     {
-        Quiz? quiz = await _collection
-            .Find(q => q.Id == quizId)
-            .FirstOrDefaultAsync()
-            ?? throw new DocumentNotFoundException("Quiz", quizId.ToString());
+        Quiz? quiz = await GetFullQuizById(quizId);
         // this ?? check must be here since neither quizId nor questionId are a part of UpdateQuestionDTO
         var question = quiz.Questions
             .FirstOrDefault(q => q.Id == questionId) 
@@ -207,15 +203,6 @@ public class QuizService(
         return question;
     }
 
-    // two db calls again ._.
-    /// <summary>
-    /// Delete a question from quiz by id, throws DocumentNotFoundException or MongoException on failure
-    /// </summary>
-    /// <param name="quizId"></param>
-    /// <param name="questionId"></param>
-    /// <returns></returns>
-    /// <exception cref="DocumentNotFoundException">Bad ids</exception>
-    /// <exception cref="MongoException">DB failure</exception>
     public async Task DeleteQuestion(ObjectId quizId, ObjectId questionId)
     {
         // ensure that both quizId and questionId are viable
