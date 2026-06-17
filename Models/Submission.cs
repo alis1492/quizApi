@@ -38,7 +38,7 @@ public class Submission
     public DateTime StartedAtUtc {get;set;} = DateTime.UtcNow;
     public DateTime? SubmittedAtUtc {get; set;}
     public Score Score {get; set;} = new Score();
-    public List<UserAnswer>? UserAnswers {get; set;}
+    public List<UserAnswer> UserAnswers {get; set;} = [];
     [BsonRepresentation(BsonType.Int32)]
     public Status Status {get; set;} = Status.InProgress;
 }
