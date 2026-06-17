@@ -138,7 +138,7 @@ public class SubmissionService(
             if(moreAnswersSelectedThanAreCorrect > 0)
                 pointsAwarded -= moreAnswersSelectedThanAreCorrect * pointsPerAnswer;
             
-            return pointsAwarded;
+            return pointsAwarded > 0 ? pointsAwarded : 0;
         }
         return 0;
     }
