@@ -13,9 +13,9 @@ public enum UserType
 // zeroed by default, populated after grading
 public class Score
 {
-    public int TotalPoints {get;set;} = 0;
-    public int MaxPoints {get; set;} = 0;
-    public int Percentage {get; set;} = 0;
+    public double TotalPoints {get;set;} = 0;
+    public double MaxPoints {get; set;} = 0;
+    public double Percentage {get; set;} = 0;
 }
 
 public enum Status

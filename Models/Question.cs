@@ -15,6 +15,6 @@ public class Question
     [BsonRepresentation(BsonType.Int32)]
     public required QType Type { get; set; }
     public required string Text { get; set; }
-    public required int Points { get; set; }
+    public required double Points { get; set; }
     public required List<Answer> Answers { get; set; }
 }

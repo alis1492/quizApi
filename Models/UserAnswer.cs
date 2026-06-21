@@ -10,5 +10,5 @@ public class UserAnswer
     // if the quiz ever gets updated (which is unlikely due to the nature of simple quizes)
     // its fine since correct answers are written at the moment of graduation
     public List<ObjectId> CorrectAnswers {get; set;} = [];
-    public int PointsAwarded {get; set;} = 0;
+    public double PointsAwarded {get; set;} = 0;
 }
