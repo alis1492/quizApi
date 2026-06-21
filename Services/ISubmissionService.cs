@@ -64,5 +64,13 @@ public interface ISubmissionService
     /// <exception cref="MongoException"></exception>
     public Task<Submission> SubmitAnswers(ObjectId id, List<SubmitUserAnswerDTO> answers);
 
+    /// <summary>
+    /// Grades the submission, throw if quiz or question id is wrong, or on db fail.
+    /// Replaces old submission with new graded one
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="DocumentNotFoundException"></exception>
+    /// <exception cref="MongoException"></exception>
     public Task<SubmissionDTO> Grade(ObjectId id);
 }

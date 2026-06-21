@@ -91,7 +91,12 @@ public class SubmissionService(
         }
         var update = Builders<Submission>.Update
             .PushEach(s => s.UserAnswers, answers)
-            .Set(s => s.Status, Status.Submitted);
+            .Set(s => s.Status, Status.Submitted)
+            .Set(s => s.SubmittedAtUtc, DateTime.UtcNow);
+
+        // TODO: a check for submission status before update in case if Grading will be separated from submitting answers
+        // as it is, its now a big deal if someone submits answers to say already graded submission
+        // we're working with simple quizes after all
         var submission = await _submissionCollection.FindOneAndUpdateAsync(s => s.Id == id, update,
             new FindOneAndUpdateOptions<Submission, Submission>{ReturnDocument = ReturnDocument.After})
             ?? throw new MongoException($"Failed to submit answers to quiz with id {id}");
@@ -101,7 +106,41 @@ public class SubmissionService(
 
     public async Task<SubmissionDTO> Grade(ObjectId id)
     {
-        throw new NotImplementedException();
+        var submission = await GetFullSubmissionById(id);
+        var quiz = await _quizService.GetFullQuizById(submission.QuizId);
+
+        foreach(var userAnswer in submission.UserAnswers)
+        {
+            ObjectId questionId = userAnswer.QuestionId;
+            // throwing on not found here is an agressive handling of tampering
+            var question = quiz.Questions.FirstOrDefault(q => q.Id == questionId)
+                ?? throw new DocumentNotFoundException("Question", questionId.ToString());
+            // add points to Score, 
+            // NOTE: normally this should be separated, but for the sake of simplicity ill keep it here
+            submission.Score.MaxPoints += question.Points;
+            
+            var userAnswerDTO = _mapper.Map<UserAnswerDTO>(userAnswer);
+
+            double pointsAwarded = GradeQuestion(question, userAnswerDTO.SelectedAnswers);
+            userAnswer.CorrectAnswers = [.. question.Answers.Where(a => a.IsCorrect).Select(a => a.Id)];
+            userAnswer.PointsAwarded = pointsAwarded;
+
+            // NOTE: again this should be separated but theres no reason to do so now
+            submission.Score.TotalPoints += pointsAwarded;
+        }
+
+        // calculate Percentage
+        submission.Score.Percentage = submission.Score.TotalPoints/submission.Score.MaxPoints * 100;
+
+        submission.Status = Status.Graded;
+
+        // replace old submission with new one
+        // seriously, submission is few kb at max, its not that big of an overhead to assemble update pipeline for
+        var result = await _submissionCollection.ReplaceOneAsync(s => s.Id == submission.Id, submission);
+        if(result.ModifiedCount <= 0)
+            throw new MongoException($"Failed to grade submission with id {submission.Id}");
+        
+        return _mapper.Map<SubmissionDTO>(submission);
     }
 
     /// <summary>
@@ -110,7 +149,7 @@ public class SubmissionService(
     /// <param name="question"></param>
     /// <param name="selectedAnswers"></param>
     /// <returns>points awarded</returns>
-    public int GradeQuestion(Question question, List<string> selectedAnswers)
+    public double GradeQuestion(Question question, List<string> selectedAnswers)
     {
         if(selectedAnswers.Count <= 0)
             return 0;
@@ -122,7 +161,7 @@ public class SubmissionService(
         } 
         else if(question.Type == QType.multipleChoice)
         {
-            int pointsAwarded = 0;
+            double pointsAwarded = 0;
             var correctAnswers = question.Answers.Where(a => a.IsCorrect).ToList<Answer>();
             var pointsPerAnswer = question.Points/correctAnswers.Count;
 

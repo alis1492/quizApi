@@ -61,8 +61,17 @@ public class SubmissionController(
     public async Task<IActionResult> SubmitAnswers([FromRoute] ObjectId id, [FromBody] List<SubmitUserAnswerDTO> answers)
     {
         await _submissionService.SubmitAnswers(id, answers);
-
         _logger.LogInformation($"Submitted Answers: {id} (SubmissionId)");
-        return NoContent();
+
+        // NOTE:in this project i use Grade in the same route as SubmitAnswers
+        // normally there should be a global service implemented to manage grading
+        // the service isnt bond to a specific user so it can be Singleton
+        // Alternatively, grading can be always automatical but the graded submission
+        // can only be accessed after a set period of time.
+        // For the most part tho, just keep it in simple, its a quiz app not a serious testing platform
+        var sDTO = await _submissionService.Grade(id);
+        _logger.LogInformation($"Graded Submission: {id} (Id)");
+        
+        return Ok(sDTO);
     }
 }
