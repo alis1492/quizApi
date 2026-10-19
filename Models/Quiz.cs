@@ -1,24 +1,10 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using quizShared;
 
 namespace quizApi.Models;
 
-public enum Subject
-{
-    Math = 0,
-    Science = 1,
-    History = 2,
-    Programming = 3,
-    Language = 4,
-    Other = 5
-}
-public class QuizSettings
-{
-    public bool ShuffleQuestions { get; set; } = false;
-    public bool ShuffleAnswers { get; set; } = true;
-    public int? DefaultQuestionTimeLimit { get; set; }
-    public int? TimeLimit { get; set; }
-}
+
 [BsonIgnoreExtraElements]
 public class Quiz
 {

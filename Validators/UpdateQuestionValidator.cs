@@ -3,7 +3,8 @@ using System.Runtime.CompilerServices;
 using FluentValidation;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Models;
 
 namespace quizApi.Validators;
@@ -40,11 +41,11 @@ public class UpdateQuestionValidator : AbstractValidator<UpdateQuestionDTO>
                 var question = context.RootContextData["Question"] as Question
                 ?? throw new Exception("Missing Question context");
 
-                if(question.Type == QType.singleChoice)
+                if(question.Type == QuestionType.singleChoice)
                 {
                     return answerDTOs.Any(a => a.IsCorrect);
                 }
-                else if(question.Type == QType.multipleChoice)
+                else if(question.Type == QuestionType.multipleChoice)
                 {
                     return answerDTOs.Count(a => a.IsCorrect) > 1;
                 }

@@ -1,5 +1,6 @@
 using quizApi.Models;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using MongoDB.Driver;
 using AutoMapper;
 using quizApi.Exceptions;
@@ -91,7 +92,7 @@ public class SubmissionService(
         }
         var update = Builders<Submission>.Update
             .PushEach(s => s.UserAnswers, answers)
-            .Set(s => s.Status, Status.Submitted)
+            .Set(s => s.Status, SubmissionStatus.Submitted)
             .Set(s => s.SubmittedAtUtc, DateTime.UtcNow);
 
         // TODO: a check for submission status before update in case if Grading will be separated from submitting answers
@@ -132,7 +133,7 @@ public class SubmissionService(
         // calculate Percentage
         submission.Score.Percentage = submission.Score.TotalPoints/submission.Score.MaxPoints * 100;
 
-        submission.Status = Status.Graded;
+        submission.Status = SubmissionStatus.Graded;
 
         // replace old submission with new one
         // seriously, submission is few kb at max, its not that big of an overhead to assemble update pipeline for
@@ -153,13 +154,13 @@ public class SubmissionService(
     {
         if(selectedAnswers.Count <= 0)
             return 0;
-        if(question.Type == QType.singleChoice)
+        if(question.Type == QuestionType.singleChoice)
         {
             // simply compare the first selected answer to correct one
             var correctAnswerId = question.Answers.First(a => a.IsCorrect).Id.ToString();
             return correctAnswerId == selectedAnswers[0] ? question.Points : 0;
         } 
-        else if(question.Type == QType.multipleChoice)
+        else if(question.Type == QuestionType.multipleChoice)
         {
             double pointsAwarded = 0;
             var correctAnswers = question.Answers.Where(a => a.IsCorrect).ToList<Answer>();

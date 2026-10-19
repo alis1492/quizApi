@@ -2,10 +2,12 @@ using AutoMapper;
 using FluentValidation;
 using MongoDB.Bson;
 using quizApi.Converters;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.ExceptionHandlers;
 using quizApi.Extensions;
 using quizApi.Models;
+using quizApi.OperationFilters;
 using quizApi.Services;
 using quizApi.Validators;
 
@@ -28,7 +30,11 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<ObjectIdOperationFilter>();
+});
 
 
 var app = builder.Build();
@@ -36,7 +42,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

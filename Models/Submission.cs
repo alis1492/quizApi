@@ -1,30 +1,8 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using quizShared;
 
 namespace quizApi.Models;
-
-public enum UserType
-{
-    Student = 0,
-    Teacher = 1,
-    Admin = 2
-}
-
-// zeroed by default, populated after grading
-public class Score
-{
-    public double TotalPoints {get;set;} = 0;
-    public double MaxPoints {get; set;} = 0;
-    public double Percentage {get; set;} = 0;
-}
-
-public enum Status
-{
-    InProgress = 0,
-    Submitted = 1,
-    Graded = 2,
-    Expired = 3 // after quiz update for example
-}
 
 [BsonIgnoreExtraElements]
 public class Submission
@@ -40,5 +18,5 @@ public class Submission
     public Score Score {get; set;} = new Score();
     public List<UserAnswer> UserAnswers {get; set;} = [];
     [BsonRepresentation(BsonType.Int32)]
-    public Status Status {get; set;} = Status.InProgress;
+    public SubmissionStatus Status {get; set;} = SubmissionStatus.InProgress;
 }

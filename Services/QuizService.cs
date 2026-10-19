@@ -7,7 +7,8 @@ using FluentValidation;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Exceptions;
 using quizApi.Models;
 using quizApi.Validators;
@@ -73,7 +74,7 @@ public class QuizService(
             Description = dto.Description,
             TeacherId = new ObjectId(dto.TeacherId),
             // dto validation allows unsafe cast
-            Subject = (Models.Subject)dto.Subject,
+            Subject = (Subject)dto.Subject,
             Settings = dto.Settings
         };
 
@@ -171,7 +172,7 @@ public class QuizService(
         // this is ugly, but its still better than magical strings of "i hope this is how the element is called in database"
         if(dto.Type != null)
             updateDefinitions.Add(updateBuilder.Set(q => 
-                q.Questions.FirstMatchingElement().Type, (QType)dto.Type));
+                q.Questions.FirstMatchingElement().Type, (QuestionType)dto.Type));
         if(dto.Text != null)
             updateDefinitions.Add(updateBuilder.Set(q => 
                 q.Questions.FirstMatchingElement().Text, dto.Text));

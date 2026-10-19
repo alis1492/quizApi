@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Models;
 using quizApi.Services;
 

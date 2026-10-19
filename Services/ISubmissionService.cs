@@ -1,5 +1,6 @@
 using quizApi.Models;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using MongoDB.Bson;
 
 namespace quizApi.Services;

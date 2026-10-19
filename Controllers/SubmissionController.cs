@@ -1,7 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Services;
 
 namespace quizApi.Controllers;

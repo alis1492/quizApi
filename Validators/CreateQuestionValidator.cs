@@ -1,5 +1,6 @@
 using FluentValidation;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Models;
 
 namespace quizApi.Validators;
@@ -10,12 +11,12 @@ public class CreateQuestionValidator : AbstractValidator<CreateQuestionDTO>
     {
         RuleFor(q => q.Answers)
             .Must(ContainOneCorrectAnswer)
-                .When(q => q.Type == (int)QType.singleChoice)
+                .When(q => q.Type == (int)QuestionType.singleChoice)
                 .WithMessage("There must be one correct answer");
         
         RuleFor(q => q.Answers)
             .Must(ContainMultipleCorrectAnswers)
-                .When(q => q.Type == (int)QType.multipleChoice)
+                .When(q => q.Type == (int)QuestionType.multipleChoice)
                 .WithMessage("There must be more than one correct answer");
     }
 

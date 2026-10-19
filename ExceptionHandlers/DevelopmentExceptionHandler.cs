@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Diagnostics;
 using MongoDB.Driver;
-using quizApi.DTOs;
+using quizShared.DTOs;
+using quizShared;
 using quizApi.Exceptions;
 
 namespace quizApi.ExceptionHandlers;
